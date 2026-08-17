@@ -17,8 +17,9 @@ services:
     plan: starter        # el disco requiere un plan de pago
     region: oregon
     healthCheckPath: /health
-    # Corre migraciones + seed de categorías antes de cada deploy (idempotente)
-    preDeployCommand: "alembic upgrade head && python -m app.db.seed"
+    # Corre migraciones + seed de categorías antes de cada deploy (idempotente).
+    # Se envuelve en `sh -c` porque Render no usa un shell y el `&&` fallaría.
+    preDeployCommand: "sh -c 'alembic upgrade head && python -m app.db.seed'"
     disk:
       name: uploads
       mountPath: /data
