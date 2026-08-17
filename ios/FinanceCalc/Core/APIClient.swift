@@ -32,8 +32,12 @@ struct Endpoint {
 final class APIClient {
     static let shared = APIClient()
 
-    // El backend corre en el host; el simulador de iOS llega vía localhost.
+    // Debug (dev local) → localhost; Release (producción) → Render.
+    #if DEBUG
     private let baseURL = URL(string: "http://localhost:8000/api/v1")!
+    #else
+    private let baseURL = URL(string: "https://finance-backend-9rh6.onrender.com/api/v1")!
+    #endif
     private let urlSession = URLSession.shared
 
     /// Token actual (lo fija Session al iniciar sesión / al arrancar).
