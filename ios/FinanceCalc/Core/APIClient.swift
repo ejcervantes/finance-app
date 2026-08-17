@@ -32,8 +32,9 @@ struct Endpoint {
 final class APIClient {
     static let shared = APIClient()
 
-    // Debug (dev local) → localhost; Release (producción) → Render.
-    #if DEBUG
+    // Simulador (dev en tu Mac) → localhost; iPhone real → producción en Render.
+    // (El iPhone no puede alcanzar el localhost de la Mac, por eso usa Render.)
+    #if targetEnvironment(simulator)
     private let baseURL = URL(string: "http://localhost:8000/api/v1")!
     #else
     private let baseURL = URL(string: "https://finance-backend-9rh6.onrender.com/api/v1")!

@@ -10,8 +10,9 @@ settings:
     MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: "1"
     SWIFT_VERSION: "5.0"
-    DEVELOPMENT_TEAM: ""
-    CODE_SIGNING_ALLOWED: NO   # dev en simulador, sin firma
+    # Firma automática: en Xcode eliges tu Apple ID (Team) y firma solo.
+    # El simulador no requiere firma; el iPhone real sí.
+    CODE_SIGN_STYLE: Automatic
 
 targets:
   FinanceCalc:
