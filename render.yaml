@@ -1,0 +1,38 @@
+# Blueprint de Render. Define el backend + base de datos + disco.
+# Render lo lee al conectar el repo (Dashboard → Blueprints → New Blueprint Instance).
+# Verifica los "plan" en el dashboard; los nombres pueden variar.
+
+databases:
+  - name: finance-db
+    databaseName: finance
+    user: finance
+    plan: basic-256mb   # ajusta según lo que ofrezca Render
+
+services:
+  - type: web
+    name: finance-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter        # el disco requiere un plan de pago
+    region: oregon
+    healthCheckPath: /health
+    # Corre migraciones + seed de categorías antes de cada deploy (idempotente)
+    preDeployCommand: "alembic upgrade head && python -m app.db.seed"
+    disk:
+      name: uploads
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: finance-db
+          property: connectionString   # URL interna (sin SSL), ideal para asyncpg
+      - key: JWT_SECRET_KEY
+        generateValue: true            # Render genera un secreto fuerte
+      - key: GEMINI_API_KEY
+        sync: false                    # lo pones a mano en el dashboard (secreto)
+      - key: GEMINI_MODEL
+        value: gemini-3.6-flash
+      - key: UPLOAD_DIR
+        value: /data/uploads           # las imágenes van al disco persistente

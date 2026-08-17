@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Entorno / secretos
+.env
+*.env
+!*.env.example
+
+# Docker / datos
+pgdata/
+backend/uploads/
+
+# Editores / SO
+.DS_Store
+.idea/
+.vscode/
+
+# iOS / Xcode (el .xcodeproj se genera con xcodegen desde project.yml)
+ios/*.xcodeproj
+ios/DerivedData/
+ios/build/
+*.xcuserstate
