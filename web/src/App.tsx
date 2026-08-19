@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { MonthProvider } from "./context/MonthContext";
 import { AppLayout } from "./components/AppLayout";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
@@ -25,7 +26,11 @@ function ProtectedRoutes() {
   const { user, loading } = useAuth();
   if (loading) return <FullScreen />;
   if (!user) return <Navigate to="/login" replace />;
-  return <AppLayout />;
+  return (
+    <MonthProvider>
+      <AppLayout />
+    </MonthProvider>
+  );
 }
 
 function PublicOnly({ children }: { children: React.ReactNode }) {

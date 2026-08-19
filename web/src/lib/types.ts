@@ -21,6 +21,8 @@ export interface Category {
   user_id: string | null;
   is_system: boolean;
   name: string;
+  type: TransactionType;
+  default_nature: ExpenseNature | null;
   icon: string | null;
   color: string | null;
   is_archived: boolean;
@@ -78,8 +80,41 @@ export interface CategoryReportItem {
   count: number;
 }
 
+export interface TrendItem {
+  month: string; // "YYYY-MM"
+  income: string;
+  expense: string;
+  balance: string;
+  cumulative: string;
+}
+
+export interface NatureReportItem {
+  nature: string; // "fixed" | "variable" | "discretionary" | "unclassified"
+  total: string;
+  count: number;
+}
+
+export interface BudgetStatusItem {
+  budget_id: string;
+  category_id: string;
+  category_name: string | null;
+  period: string;
+  window: { from: string; to: string };
+  budget: string;
+  spent: string;
+  remaining: string;
+  percent_used: number | null;
+}
+
 export const NATURE_LABELS: Record<ExpenseNature, string> = {
   fixed: "Fijo",
   variable: "Variable",
   discretionary: "Prescindible",
+};
+
+export const NATURE_LABELS_EXT: Record<string, string> = {
+  fixed: "Fijo",
+  variable: "Variable",
+  discretionary: "Prescindible",
+  unclassified: "Sin clasificar",
 };
