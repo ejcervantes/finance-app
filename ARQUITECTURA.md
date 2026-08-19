@@ -443,7 +443,20 @@ Los términos exactos de retención de datos de Gemini se confirman al implement
       - Verificado en vivo: respuestas con datos reales del mes, con las barreras de inversión
     - [ ] Cuentas y presupuestos en la UI
     - [ ] Pulido: íconos/colores de categorías, gráfica en el dashboard
-  - [ ] Frontend web
+  - [ ] **Frontend web (React + Vite + Tailwind v4)** — en curso
+    - [x] Tema claro/oscuro con paleta #FFE9CF / #134F5C, fuente Plus Jakarta Sans
+    - [x] Login/registro, dashboard (balance, ahorro, gasto por categoría), movimientos (lista + alta)
+    - [x] Responsivo (móvil/desktop), verificado en el navegador
+    - [ ] Escaneo de recibos + asesor + presupuestos en la web
+    - [ ] Deploy de la web (Render Static Site apuntando al backend en producción)
+
+### Stack del frontend web
+- **React + Vite + TypeScript + Tailwind CSS v4**, React Router, TanStack Query.
+- Tema por CSS variables (claro: fondo melocotón / texto teal; oscuro: al revés).
+- API en `VITE_API_URL` (dev: localhost:8000; prod: Render). Carpeta `web/`.
+- [x] **Deploy del backend en Render** (Docker + Postgres + disco), HTTPS
+  - URL: https://finance-backend-9rh6.onrender.com — verificado en vivo desde la app iOS (Release)
+  - Migraciones + seed vía `backend/prestart.sh` (pre-deploy). Ver [DEPLOY.md](DEPLOY.md)
 
 **✅ Backend v1 completo** (36 rutas) — IA real con Gemini validada end-to-end
 (asesor con tool-calling + escaneo de recibos con visión).

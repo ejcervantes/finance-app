@@ -26,4 +26,5 @@ backend/uploads/
 ios/*.xcodeproj
 ios/DerivedData/
 ios/build/
+ios/build-release/
 *.xcuserstate

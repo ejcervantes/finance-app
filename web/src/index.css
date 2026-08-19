@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+/* Fuente: Plus Jakarta Sans — moderna, geométrica, transmite confianza */
+@import "@fontsource/plus-jakarta-sans/400.css";
+@import "@fontsource/plus-jakarta-sans/500.css";
+@import "@fontsource/plus-jakarta-sans/600.css";
+@import "@fontsource/plus-jakarta-sans/700.css";
+@import "@fontsource/plus-jakarta-sans/800.css";
+
+/* Modo oscuro por clase .dark (lo controla el ThemeToggle) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tokens semánticos → utilidades Tailwind (bg-surface, text-fg, etc.).
+   Apuntan a variables que cambian entre claro/oscuro. */
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ===== Modo claro: fondo melocotón (#FFE9CF), texto teal (#134F5C) ===== */
+:root {
+  --bg: #ffe9cf;
+  --surface: #fff7ec;
+  --surface-2: #ffffff;
+  --fg: #123f49;
+  --muted: #5b7f88;
+  --primary: #134f5c;
+  --primary-fg: #fff3e2;
+  --border: #f2d9bd;
+  --accent: #dd8038;
+  --success: #1f7a52;
+  --danger: #b4443a;
+}
+
+/* ===== Modo oscuro: fondo teal profundo, texto melocotón (#FFE9CF) ===== */
+.dark {
+  --bg: #0d363f;
+  --surface: #123f49;
+  --surface-2: #164c58;
+  --fg: #ffe9cf;
+  --muted: #9fbfc7;
+  --primary: #ffe9cf;
+  --primary-fg: #103a43;
+  --border: #1d5563;
+  --accent: #f0a869;
+  --success: #6fce9f;
+  --danger: #f0837a;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Transición suave al cambiar de tema en superficies y bordes */
+* {
+  transition-property: background-color, border-color;
+  transition-duration: 0.2s;
+}
