@@ -144,6 +144,23 @@ export interface BudgetStatusItem {
   percent_used: number | null;
 }
 
+export type MessageRole = "user" | "assistant";
+
+export interface MessageRead {
+  role: MessageRole;
+  content: string;
+  created_at: string;
+}
+
+export interface ChatResponse {
+  reply: string;
+}
+
+export interface InsightsResponse {
+  signals: string[];
+  advice: string;
+}
+
 export const NATURE_LABELS: Record<ExpenseNature, string> = {
   fixed: "Fijo",
   variable: "Variable",

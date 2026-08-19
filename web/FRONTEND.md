@@ -58,8 +58,8 @@ estado codificado en **color + texto** (nunca solo color); resumen primero.
 ### Nuevas pantallas
 - [x] **[#1] Presupuestos.** Pantalla CRUD (crear/editar/eliminar) con progreso y
       semáforo por categoría. Alimenta también la tarjeta del dashboard.
-- [ ] **[#2] Asesor de IA (chat).** Consultas al asesor + análisis del mes. Ver la
-      mejora de contexto temporal en "Cambios de backend".
+- [x] **[#2] Asesor de IA (chat).** Pantalla /asesor: chat con historial, insights
+      (Análisis del mes), y evaluación de compras ("¿me alcanza?").
 - [x] **[#7] Menú de perfil / Ajustes.** El avatar lleva a `/perfil`: datos
       personales editables (email de solo lectura), tema claro/oscuro (movido de la
       barra), cambio de contraseña y cerrar sesión.
@@ -76,12 +76,10 @@ estado codificado en **color + texto** (nunca solo color); resumen primero.
       categoría↔tipo al crear/editar movimientos.
 - [x] **[#6] Naturaleza por defecto.** Columna `default_nature` (nullable) en
       `categories` + valores en el seed. La devuelve `GET /categories`.
-      **Falta el frontend**: usar `default_nature` para pre-seleccionar la naturaleza.
-- [ ] **[#2] Asesor con contexto temporal ("¿me alcanza para esto?").** Que el
-      asesor evalúe una compra prospectiva: si es pequeña, ver si cabe en el mes;
-      si es grande (ej. un carro), mirar cuánto has ahorrado en los últimos años y
-      qué tan bien podrías asumir ese gasto. Requiere darle herramientas de
-      histórico multi-mes/año y un modo "evaluar compra".
+      El frontend la usa para pre-seleccionar la naturaleza.
+- [x] **[#2] Asesor con contexto temporal ("¿me alcanza para esto?").** Nueva
+      herramienta `get_savings_trend` (12 meses) + instrucciones para evaluar
+      compras pequeñas (¿cabe en el mes?) y grandes (¿en cuántos meses de ahorro?).
 
 ---
 

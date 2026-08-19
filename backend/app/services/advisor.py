@@ -40,6 +40,13 @@ _GUARDRAILS = (
 _CHAT_SYSTEM = _GUARDRAILS + (
     "\nUsa las herramientas disponibles para obtener los datos del usuario antes "
     "de dar cifras. Si no hay datos, dilo con naturalidad."
+    "\nEVALUAR UNA COMPRA ('¿me alcanza para X?'): "
+    "si es una compra PEQUEÑA, mira el balance y los gastos del mes actual y di si "
+    "cabe sin desbalancear el mes. Si es una compra GRANDE (ej. un carro, un viaje), "
+    "usa `get_savings_trend` para ver cuánto ahorra en promedio por mes, a cuántos "
+    "meses de ahorro equivale la compra, y qué tan cómodamente podría asumirla "
+    "(de golpe vs. ahorrando unos meses). Sé concreto con cifras y honesto si es "
+    "arriesgado. Mantén las barreras: nada de instrumentos de inversión específicos."
     "\nFORMATO: responde en texto plano. Puedes usar **negritas** y listas "
     "numeradas, pero NO uses encabezados markdown (nada de ###) ni líneas "
     "separadoras (nada de ---)."
@@ -67,6 +74,13 @@ TOOLS = [
     ToolSpec(
         name="get_budget_status",
         description="Estado de los presupuestos: cuánto se ha gastado vs. el tope.",
+    ),
+    ToolSpec(
+        name="get_savings_trend",
+        description=(
+            "Ingresos, gastos, balance y ahorro acumulado por mes de los últimos 12 "
+            "meses. Úsalo para evaluar capacidad de ahorro y compras grandes."
+        ),
     ),
 ]
 
@@ -101,6 +115,8 @@ def make_tool_executor(db: AsyncSession, user_id: uuid.UUID) -> ToolExecutor:
             return {
                 "items": _jsonable(await reports.budgets_status(db, user_id, today))
             }
+        if name == "get_savings_trend":
+            return {"items": _jsonable(await reports.trend(db, user_id, 12))}
         return {"error": f"herramienta desconocida: {name}"}
 
     return execute
