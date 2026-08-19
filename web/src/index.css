@@ -1,11 +1,12 @@
 @import "tailwindcss";
 
-/* Fuente: Plus Jakarta Sans — moderna, geométrica, transmite confianza */
-@import "@fontsource/plus-jakarta-sans/400.css";
-@import "@fontsource/plus-jakarta-sans/500.css";
-@import "@fontsource/plus-jakarta-sans/600.css";
-@import "@fontsource/plus-jakarta-sans/700.css";
-@import "@fontsource/plus-jakarta-sans/800.css";
+/* Fuente: Plus Jakarta Sans — moderna, geométrica, transmite confianza.
+   Solo subconjunto latin (suficiente para español) → menos archivos, deploy ligero. */
+@import "@fontsource/plus-jakarta-sans/latin-400.css";
+@import "@fontsource/plus-jakarta-sans/latin-500.css";
+@import "@fontsource/plus-jakarta-sans/latin-600.css";
+@import "@fontsource/plus-jakarta-sans/latin-700.css";
+@import "@fontsource/plus-jakarta-sans/latin-800.css";
 
 /* Modo oscuro por clase .dark (lo controla el ThemeToggle) */
 @custom-variant dark (&:where(.dark, .dark *));
