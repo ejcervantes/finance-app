@@ -60,9 +60,9 @@ estado codificado en **color + texto** (nunca solo color); resumen primero.
       semáforo por categoría. Alimenta también la tarjeta del dashboard.
 - [ ] **[#2] Asesor de IA (chat).** Consultas al asesor + análisis del mes. Ver la
       mejora de contexto temporal en "Cambios de backend".
-- [ ] **[#7] Menú de perfil / Ajustes.** Al hacer clic en el ícono de perfil, abrir
-      un menú/página con: datos personales (nombre, apellido, email…) editables, y
-      **mover ahí** el interruptor de modo claro/oscuro (sacarlo de la barra).
+- [x] **[#7] Menú de perfil / Ajustes.** El avatar lleva a `/perfil`: datos
+      personales editables (email de solo lectura), tema claro/oscuro (movido de la
+      barra), cambio de contraseña y cerrar sesión.
 - [ ] **Cuentas** (efectivo, banco, tarjeta…) — CRUD en la UI.
 
 ---

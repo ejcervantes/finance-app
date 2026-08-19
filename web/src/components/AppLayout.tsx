@@ -1,8 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Logo } from "./Logo";
-import { ThemeToggle } from "./ThemeToggle";
-import { ChartIcon, ListIcon, LogoutIcon, TargetIcon } from "./icons";
+import { ChartIcon, ListIcon, TargetIcon } from "./icons";
 import type { ReactNode } from "react";
 
 const navItems = [
@@ -41,7 +40,7 @@ function NavItem({
 }
 
 export function AppLayout() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const initials = user
     ? `${user.first_name[0] ?? ""}${user.last_name[0] ?? ""}`.toUpperCase()
     : "";
@@ -56,24 +55,18 @@ export function AppLayout() {
               <NavItem key={item.to} {...item} />
             ))}
           </nav>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <div className="hidden items-center gap-2 sm:flex">
-              <span
-                className="grid h-10 w-10 place-items-center rounded-full bg-accent/20 text-sm font-bold text-fg"
-                title={`${user?.first_name} ${user?.last_name}`}
-              >
-                {initials}
-              </span>
-            </div>
-            <button
-              onClick={logout}
-              aria-label="Cerrar sesión"
-              className="grid h-10 w-10 place-items-center rounded-xl border border-border bg-surface-2 text-fg transition hover:border-danger/50 hover:text-danger"
-            >
-              <LogoutIcon />
-            </button>
-          </div>
+          <NavLink
+            to="/perfil"
+            title="Ajustes"
+            aria-label="Ajustes"
+            className={({ isActive }) =>
+              `grid h-10 w-10 place-items-center rounded-full bg-accent/20 text-sm font-bold text-fg transition ${
+                isActive ? "ring-2 ring-primary" : "hover:ring-2 hover:ring-primary/40"
+              }`
+            }
+          >
+            {initials}
+          </NavLink>
         </div>
       </header>
 
