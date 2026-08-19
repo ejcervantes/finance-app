@@ -8,6 +8,7 @@ import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { Dashboard } from "./pages/Dashboard";
 import { Transactions } from "./pages/Transactions";
+import { Budgets } from "./pages/Budgets";
 import { Spinner } from "./components/ui";
 
 const queryClient = new QueryClient({
@@ -52,6 +53,7 @@ export function App() {
               <Route element={<ProtectedRoutes />}>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/movimientos" element={<Transactions />} />
+                <Route path="/presupuestos" element={<Budgets />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

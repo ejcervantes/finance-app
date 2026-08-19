@@ -2,12 +2,13 @@ import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
-import { ChartIcon, ListIcon, LogoutIcon } from "./icons";
+import { ChartIcon, ListIcon, LogoutIcon, TargetIcon } from "./icons";
 import type { ReactNode } from "react";
 
 const navItems = [
   { to: "/", label: "Resumen", icon: <ChartIcon />, end: true },
   { to: "/movimientos", label: "Movimientos", icon: <ListIcon /> },
+  { to: "/presupuestos", label: "Presupuestos", icon: <TargetIcon /> },
 ];
 
 function NavItem({

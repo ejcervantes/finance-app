@@ -65,6 +65,31 @@ export interface TransactionCreate {
   receipt_id?: string | null;
 }
 
+export type BudgetPeriod = "weekly" | "monthly" | "yearly";
+
+export const PERIOD_LABELS: Record<BudgetPeriod, string> = {
+  weekly: "Semanal",
+  monthly: "Mensual",
+  yearly: "Anual",
+};
+
+export interface Budget {
+  id: string;
+  user_id: string;
+  category_id: string;
+  amount: string;
+  period: BudgetPeriod;
+  start_date: string;
+  created_at: string;
+}
+
+export interface BudgetCreate {
+  category_id: string;
+  amount: string;
+  period: BudgetPeriod;
+  start_date: string;
+}
+
 export interface Summary {
   period: { from: string; to: string };
   total_income: string;

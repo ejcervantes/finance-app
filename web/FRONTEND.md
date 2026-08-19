@@ -56,7 +56,8 @@ estado codificado en **color + texto** (nunca solo color); resumen primero.
       `/transactions/scan` → pre-llenar el formulario (el backend ya existe).
 
 ### Nuevas pantallas
-- [ ] **[#1] Presupuestos.** Pantalla para crear/editar topes por categoría (CRUD).
+- [x] **[#1] Presupuestos.** Pantalla CRUD (crear/editar/eliminar) con progreso y
+      semáforo por categoría. Alimenta también la tarjeta del dashboard.
 - [ ] **[#2] Asesor de IA (chat).** Consultas al asesor + análisis del mes. Ver la
       mejora de contexto temporal en "Cambios de backend".
 - [ ] **[#7] Menú de perfil / Ajustes.** Al hacer clic en el ícono de perfil, abrir
