@@ -39,24 +39,19 @@ estado codificado en **color + texto** (nunca solo color); resumen primero.
 ## Mejoras pendientes (priorizadas)
 
 ### Rediseño de la home
-- [ ] **Filtro por mes (global).** Navegar mes a mes (◀ Agosto 2026 ▶) y que todo
-      el dashboard (y movimientos) se filtre a ese mes. Pasa `date_from`/`date_to`.
-- [ ] **Etiquetas de meses en la mini-línea del hero.** Hoy la línea de "balance de
-      los últimos 6 meses" no muestra los meses abajo — no se sabe a qué punto
-      corresponde cada mes. Agregar etiquetas (Mar…Ago) o tooltips.
-- [ ] Portar los gráficos de la maqueta a componentes React (barras mensuales,
-      dona, barra apilada de naturaleza, progreso de presupuestos, área, mini-línea).
-- [ ] Hover/tooltips propios en los gráficos (no solo `<title>` nativo).
+- [x] **Filtro por mes (global).** Navegador ◀ mes ▶ que filtra dashboard y
+      movimientos (`MonthProvider`).
+- [x] **Etiquetas de meses en la mini-línea del hero.**
+- [x] Gráficos portados a React (barras mensuales, dona, barra apilada de
+      naturaleza, progreso de presupuestos con semáforo, área, mini-línea).
+- [ ] Hover/tooltips propios en los gráficos (hoy solo `<title>` nativo).
 
 ### Formulario de movimientos
-- [ ] **[#3] Editar movimientos.** Hoy solo se crea/borra; falta editar
-      (el backend ya tiene `PATCH /transactions/{id}`).
-- [ ] **[#5] Categorías por tipo (ingreso/gasto).** No tiene sentido "ingreso +
-      categoría Comida". El formulario debe mostrar solo las categorías del tipo
-      elegido. **Requiere backend** (ver abajo).
-- [ ] **[#6] Naturaleza por defecto según categoría.** Al elegir una categoría
-      (ej. Restaurantes → prescindible) pre-seleccionar su naturaleza, editable.
-      **Requiere backend** (ver abajo).
+- [x] **[#3] Editar movimientos.** Clic en un movimiento → editar/eliminar.
+- [x] **[#5] Categorías por tipo (ingreso/gasto).** El formulario filtra las
+      categorías según el tipo elegido.
+- [x] **[#6] Naturaleza por defecto según categoría.** Al elegir la categoría se
+      pre-selecciona su naturaleza (editable).
 - [ ] **[#4] Escaneo de recibos en la web.** Subir/arrastrar una imagen →
       `/transactions/scan` → pre-llenar el formulario (el backend ya existe).
 
