@@ -27,6 +27,14 @@ class NatureReportItem(BaseModel):
     count: int
 
 
+class TrendItem(BaseModel):
+    month: str  # "2026-08"
+    income: Decimal
+    expense: Decimal
+    balance: Decimal
+    cumulative: Decimal
+
+
 class BudgetStatusItem(BaseModel):
     budget_id: uuid.UUID
     category_id: uuid.UUID

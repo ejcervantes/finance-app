@@ -117,13 +117,20 @@ La columna `type` los distingue. Simplifica reportes y el modelo.
 | `id` | UUID | PK |
 | `user_id` | FK → users, **NULL** | NULL = categoría del sistema (para todos); si no, del usuario |
 | `name` | VARCHAR | ej. "Comida", "Salario" |
+| `type` | ENUM `income` / `expense` | filtra las categorías del formulario según el tipo |
+| `default_nature` | ENUM `fixed`/`variable`/`discretionary`, **NULL** | naturaleza sugerida (solo gastos) |
 | `icon` / `color` | VARCHAR | opcional, para la UI |
 | `is_archived` | BOOLEAN | ocultar sin borrar |
 | `created_at` / `updated_at` | TIMESTAMP | |
 
 > **Predefinidas sin duplicar:** las categorías del sistema existen **una sola vez**
 > (`user_id = NULL`). Consulta para un usuario: `WHERE user_id = :yo OR user_id IS NULL`.
-> `type` (ingreso/gasto) **no** vive aquí — vive en la transacción.
+>
+> **`type` en la categoría (refina la decisión #3):** además del `type` de la
+> transacción (fuente de verdad del signo), la categoría lleva su propio `type`
+> para no mezclar "ingreso + categoría de gasto". Al crear/editar un movimiento se
+> valida que `category.type == transaction.type`. `default_nature` pre-selecciona
+> la naturaleza en el formulario (editable).
 
 #### 💸 `transactions` (corazón del sistema)
 | Columna | Tipo | Notas |
@@ -317,6 +324,7 @@ Respuesta paginada: `{ "items": [...], "total": N, "page": 1, "page_size": 50 }`
 | GET | `/reports/by-category` | Gasto/ingreso agrupado por categoría |
 | GET | `/reports/by-nature` | Desglose fijo / variable / discrecional |
 | GET | `/reports/budgets` | Presupuesto vs. ejecutado por categoría |
+| GET | `/reports/trend` | Ingresos/gastos/balance/acumulado por mes (últimos N) |
 
 ### 📸 Escaneo de recibos (IA)
 | Método | Endpoint | Qué hace |

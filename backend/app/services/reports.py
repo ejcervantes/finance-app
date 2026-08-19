@@ -6,7 +6,7 @@ import uuid
 from datetime import date, timedelta
 from decimal import Decimal
 
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.budget import Budget
@@ -105,6 +105,67 @@ async def by_nature(
         }
         for nature, amt, cnt in (await db.execute(stmt)).all()
     ]
+
+
+async def trend(
+    db: AsyncSession, user_id: uuid.UUID, months: int = 6
+) -> list[dict]:
+    """Ingresos/gastos/balance por mes de los últimos `months`, con acumulado."""
+    today = date.today()
+    ym: list[tuple[int, int]] = []
+    for i in range(months - 1, -1, -1):
+        mm, yy = today.month - i, today.year
+        while mm <= 0:
+            mm += 12
+            yy -= 1
+        ym.append((yy, mm))
+
+    start = date(ym[0][0], ym[0][1], 1)
+    last_day = calendar.monthrange(today.year, today.month)[1]
+    end = today.replace(day=last_day)
+
+    month_col = func.date_trunc("month", Transaction.transaction_date)
+    stmt = (
+        select(month_col.label("m"), Transaction.type, func.sum(Transaction.amount))
+        .where(
+            Transaction.user_id == user_id,
+            Transaction.transaction_date >= start,
+            Transaction.transaction_date <= end,
+        )
+        .group_by("m", Transaction.type)
+    )
+    agg: dict[tuple[int, int], dict] = {}
+    for m, ttype, total in (await db.execute(stmt)).all():
+        agg.setdefault((m.year, m.month), {})[ttype] = total or ZERO
+
+    # Ahorro acumulado antes de la ventana (para arrancar la línea acumulada).
+    net_before = case(
+        (Transaction.type == TransactionType.income, Transaction.amount),
+        else_=-Transaction.amount,
+    )
+    base = await db.scalar(
+        select(func.coalesce(func.sum(net_before), ZERO)).where(
+            Transaction.user_id == user_id, Transaction.transaction_date < start
+        )
+    )
+
+    results: list[dict] = []
+    cumulative = Decimal(base or 0)
+    for yy, mm in ym:
+        income = agg.get((yy, mm), {}).get(TransactionType.income, ZERO)
+        expense = agg.get((yy, mm), {}).get(TransactionType.expense, ZERO)
+        balance = income - expense
+        cumulative += balance
+        results.append(
+            {
+                "month": f"{yy}-{mm:02d}",
+                "income": income,
+                "expense": expense,
+                "balance": balance,
+                "cumulative": cumulative,
+            }
+        )
+    return results
 
 
 async def budgets_status(

@@ -38,9 +38,13 @@ _SORT_FIELDS = {
 
 
 async def _validate_category(
-    category_id: uuid.UUID, user_id: uuid.UUID, db: DbSession
+    category_id: uuid.UUID,
+    user_id: uuid.UUID,
+    db: DbSession,
+    expected_type: TransactionType,
 ) -> None:
-    """La categoría debe existir, ser accesible (propia o del sistema) y no estar archivada."""
+    """La categoría debe existir, ser accesible (propia o del sistema), no estar
+    archivada, y su tipo debe coincidir con el del movimiento."""
     category = await db.get(Category, category_id)
     if category is None or (
         category.user_id is not None and category.user_id != user_id
@@ -53,6 +57,11 @@ async def _validate_category(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="No se puede usar una categoría archivada",
+        )
+    if category.type != expected_type:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="La categoría no corresponde al tipo (ingreso/gasto) del movimiento",
         )
 
 
@@ -138,7 +147,7 @@ async def list_transactions(
 async def create_transaction(
     payload: TransactionCreate, current_user: CurrentUser, db: DbSession
 ) -> Transaction:
-    await _validate_category(payload.category_id, current_user.id, db)
+    await _validate_category(payload.category_id, current_user.id, db, payload.type)
     if payload.account_id is not None:
         await _validate_account(payload.account_id, current_user.id, db)
 
@@ -280,13 +289,17 @@ async def update_transaction(
     transaction = await _get_owned_transaction(transaction_id, current_user.id, db)
     data = payload.model_dump(exclude_unset=True)
 
-    if "category_id" in data and data["category_id"] is not None:
-        await _validate_category(data["category_id"], current_user.id, db)
     if "account_id" in data and data["account_id"] is not None:
         await _validate_account(data["account_id"], current_user.id, db)
 
     for field, value in data.items():
         setattr(transaction, field, value)
+
+    # Coherencia categoría↔tipo con los valores finales (si cambió alguno).
+    if "category_id" in data or "type" in data:
+        await _validate_category(
+            transaction.category_id, current_user.id, db, transaction.type
+        )
 
     # Coherencia: un ingreso no lleva naturaleza de gasto.
     if transaction.type == TransactionType.income:

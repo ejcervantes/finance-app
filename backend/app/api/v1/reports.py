@@ -5,11 +5,14 @@ from fastapi import APIRouter
 
 from app.deps import CurrentUser, DbSession
 from app.models.enums import TransactionType
+from fastapi import Query
+
 from app.schemas.report import (
     BudgetStatusItem,
     CategoryReportItem,
     NatureReportItem,
     SummaryReport,
+    TrendItem,
 )
 from app.services import reports
 
@@ -62,6 +65,15 @@ async def report_by_nature(
     return await reports.by_nature(
         db, current_user.id, date_from or default_from, date_to or default_to
     )
+
+
+@router.get("/trend", response_model=list[TrendItem])
+async def report_trend(
+    current_user: CurrentUser,
+    db: DbSession,
+    months: int = Query(default=6, ge=1, le=24),
+) -> list[dict]:
+    return await reports.trend(db, current_user.id, months)
 
 
 @router.get("/budgets", response_model=list[BudgetStatusItem])

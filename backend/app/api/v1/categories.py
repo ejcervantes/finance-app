@@ -5,6 +5,7 @@ from sqlalchemy import or_, select
 
 from app.deps import CurrentUser, DbSession
 from app.models.category import Category
+from app.models.enums import TransactionType
 from app.schemas.category import CategoryCreate, CategoryRead, CategoryUpdate
 
 router = APIRouter(prefix="/categories", tags=["categories"])
@@ -38,6 +39,7 @@ async def list_categories(
     current_user: CurrentUser,
     db: DbSession,
     include_archived: bool = Query(default=False),
+    type: TransactionType | None = Query(default=None),
 ) -> list[Category]:
     # Del sistema (user_id NULL) + las propias
     stmt = select(Category).where(
@@ -45,6 +47,8 @@ async def list_categories(
     )
     if not include_archived:
         stmt = stmt.where(Category.is_archived.is_(False))
+    if type is not None:
+        stmt = stmt.where(Category.type == type)
     stmt = stmt.order_by(Category.name)
     result = await db.scalars(stmt)
     return list(result.all())
@@ -57,6 +61,11 @@ async def create_category(
     category = Category(
         user_id=current_user.id,
         name=payload.name,
+        type=payload.type,
+        # La naturaleza por defecto solo aplica a gastos.
+        default_nature=(
+            payload.default_nature if payload.type == TransactionType.expense else None
+        ),
         icon=payload.icon,
         color=payload.color,
     )
