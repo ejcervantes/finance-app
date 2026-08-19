@@ -1,0 +1,10 @@
+{
+  // Despliegue como Worker de "static assets" (sitio estático) en Cloudflare.
+  "name": "finance-app",
+  "compatibility_date": "2025-01-01",
+  "assets": {
+    "directory": "./dist",
+    // Sirve index.html para rutas del cliente (React Router) → sin 404 al refrescar.
+    "not_found_handling": "single-page-application"
+  }
+}
