@@ -52,8 +52,8 @@ estado codificado en **color + texto** (nunca solo color); resumen primero.
       categorías según el tipo elegido.
 - [x] **[#6] Naturaleza por defecto según categoría.** Al elegir la categoría se
       pre-selecciona su naturaleza (editable).
-- [ ] **[#4] Escaneo de recibos en la web.** Subir/arrastrar una imagen →
-      `/transactions/scan` → pre-llenar el formulario (el backend ya existe).
+- [x] **[#4] Escaneo de recibos en la web.** Botón 📷 Escanear → sube la imagen →
+      Gemini extrae → modal 'Confirmar recibo' pre-llenado (con receipt_id).
 
 ### Nuevas pantallas
 - [x] **[#1] Presupuestos.** Pantalla CRUD (crear/editar/eliminar) con progreso y

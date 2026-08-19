@@ -90,6 +90,19 @@ export interface BudgetCreate {
   start_date: string;
 }
 
+export interface ReceiptScanResponse {
+  receipt_id: string;
+  image_url: string;
+  amount: string | null;
+  transaction_date: string | null;
+  description: string | null;
+  suggested_category_id: string | null;
+  suggested_expense_nature: ExpenseNature | null;
+  confidence: number | null;
+  reasoning: string | null;
+  raw_items: string[];
+}
+
 export interface Summary {
   period: { from: string; to: string };
   total_income: string;

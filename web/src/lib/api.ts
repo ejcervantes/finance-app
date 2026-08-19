@@ -81,6 +81,31 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   return (await res.json()) as T;
 }
 
+/** Sube una imagen (multipart) al endpoint de escaneo de recibos. */
+async function uploadImage<T>(path: string, file: File): Promise<T> {
+  const form = new FormData();
+  form.append("file", file);
+  const headers: Record<string, string> = {};
+  if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+
+  let res: Response;
+  try {
+    res = await fetch(API_URL + path, { method: "POST", headers, body: form });
+  } catch {
+    throw new ApiError("No se pudo subir la imagen.", 0);
+  }
+  if (!res.ok) {
+    let detail: string | null = null;
+    try {
+      detail = extractDetail(await res.json());
+    } catch {
+      /* sin cuerpo */
+    }
+    throw new ApiError(detail ?? `Error ${res.status}`, res.status);
+  }
+  return (await res.json()) as T;
+}
+
 export const api = {
   get: <T>(path: string, query?: RequestOptions["query"]) =>
     request<T>(path, { query }),
@@ -89,6 +114,7 @@ export const api = {
   patch: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: "PATCH", body }),
   del: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+  uploadImage,
 };
 
 export { API_URL };
