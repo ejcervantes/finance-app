@@ -18,6 +18,9 @@ from app.models.receipt import Receipt
 from app.models.transaction import Transaction
 from app.schemas.receipt import ReceiptScanResponse
 from app.schemas.transaction import (
+    BulkError,
+    BulkResult,
+    BulkTransactionCreate,
     TransactionCreate,
     TransactionList,
     TransactionRead,
@@ -143,48 +146,74 @@ async def list_transactions(
     )
 
 
-@router.post("", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
-async def create_transaction(
-    payload: TransactionCreate, current_user: CurrentUser, db: DbSession
+async def _build_transaction(
+    payload: TransactionCreate, user, db: DbSession
 ) -> Transaction:
-    await _validate_category(payload.category_id, current_user.id, db, payload.type)
+    """Valida y construye una transacción (la agrega a la sesión, SIN commit).
+    Se reutiliza tanto en la creación simple como en la importación masiva."""
+    await _validate_category(payload.category_id, user.id, db, payload.type)
     if payload.account_id is not None:
-        await _validate_account(payload.account_id, current_user.id, db)
+        await _validate_account(payload.account_id, user.id, db)
 
     # Si viene de un recibo escaneado, se enlaza y la fuente es receipt_scan.
     receipt: Receipt | None = None
     if payload.receipt_id is not None:
         receipt = await db.get(Receipt, payload.receipt_id)
-        if receipt is None or receipt.user_id != current_user.id:
+        if receipt is None or receipt.user_id != user.id:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="El recibo no existe o no es accesible",
             )
 
-    source = (
-        TransactionSource.receipt_scan if receipt else TransactionSource.manual
-    )
-    nature_source = _derive_nature_source(payload.expense_nature, receipt)
-
     transaction = Transaction(
-        user_id=current_user.id,
+        user_id=user.id,
         type=payload.type,
         amount=payload.amount,
-        currency=payload.currency or current_user.base_currency,
+        currency=payload.currency or user.base_currency,
         expense_nature=payload.expense_nature,
         description=payload.description,
         transaction_date=payload.transaction_date,
         account_id=payload.account_id,
         category_id=payload.category_id,
         notes=payload.notes,
-        source=source,
-        nature_source=nature_source,
+        source=TransactionSource.receipt_scan if receipt else TransactionSource.manual,
+        nature_source=_derive_nature_source(payload.expense_nature, receipt),
         receipt_id=payload.receipt_id,
     )
     db.add(transaction)
+    return transaction
+
+
+@router.post("", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
+async def create_transaction(
+    payload: TransactionCreate, current_user: CurrentUser, db: DbSession
+) -> Transaction:
+    transaction = await _build_transaction(payload, current_user, db)
     await db.commit()
     await db.refresh(transaction)
     return transaction
+
+
+@router.post("/bulk", response_model=BulkResult)
+async def bulk_create_transactions(
+    payload: BulkTransactionCreate, current_user: CurrentUser, db: DbSession
+) -> BulkResult:
+    """Importación masiva: recorre la lista y crea cada transacción reusando la
+    misma validación que la creación simple. Es atómico: si alguna fila falla,
+    no se crea ninguna y se devuelven todos los errores para corregir."""
+    errors: list[BulkError] = []
+    for i, item in enumerate(payload.items):
+        try:
+            await _build_transaction(item, current_user, db)
+        except HTTPException as exc:
+            errors.append(BulkError(index=i, detail=str(exc.detail)))
+
+    if errors:
+        await db.rollback()
+        return BulkResult(created=0, errors=errors)
+
+    await db.commit()
+    return BulkResult(created=len(payload.items), errors=[])
 
 
 def _derive_nature_source(

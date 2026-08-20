@@ -71,3 +71,19 @@ class TransactionList(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class BulkTransactionCreate(BaseModel):
+    """Importación masiva: una lista de transacciones a crear de golpe."""
+
+    items: list[TransactionCreate] = Field(min_length=1, max_length=500)
+
+
+class BulkError(BaseModel):
+    index: int  # fila (0-based) que falló
+    detail: str
+
+
+class BulkResult(BaseModel):
+    created: int
+    errors: list[BulkError]

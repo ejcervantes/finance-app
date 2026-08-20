@@ -15,6 +15,7 @@ Paleta: **#FFE9CF** (melocotón) + **#134F5C** (teal). Fuente: **Plus Jakarta Sa
 - [x] Movimientos (lista + alta + borrar)
 - [x] Tema claro/oscuro + responsivo
 - [x] Deploy en Cloudflare (Workers static assets) apuntando al backend en Render
+- [x] Importación masiva: grilla editable + pegar estado de cuenta → `POST /transactions/bulk` (atómico)
 
 ---
 

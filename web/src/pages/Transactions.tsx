@@ -1,12 +1,13 @@
 import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { useMonth } from "../context/MonthContext";
 import { formatMoney, formatDate, todayISO } from "../lib/format";
 import { Button, Card, Field, Input, Spinner } from "../components/ui";
 import { Modal } from "../components/Modal";
 import { MonthNav } from "../components/MonthNav";
-import { ArrowDownIcon, ArrowUpIcon, CameraIcon, PlusIcon } from "../components/icons";
+import { ArrowDownIcon, ArrowUpIcon, CameraIcon, PlusIcon, UploadIcon } from "../components/icons";
 import {
   NATURE_LABELS,
   type Category,
@@ -28,6 +29,7 @@ interface ModalState {
 
 export function Transactions() {
   const { range, label } = useMonth();
+  const navigate = useNavigate();
   const [modal, setModal] = useState<ModalState>({ open: false, editing: null, draft: null });
   const [scanning, setScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
@@ -60,9 +62,13 @@ export function Transactions() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-extrabold tracking-tight text-fg">Movimientos</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <MonthNav />
           <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+          <Button variant="secondary" onClick={() => navigate("/importar")}>
+            <UploadIcon width={18} height={18} />
+            Importar
+          </Button>
           <Button variant="secondary" onClick={() => fileInput.current?.click()}>
             <CameraIcon width={18} height={18} />
             Escanear

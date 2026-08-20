@@ -90,6 +90,16 @@ export interface BudgetCreate {
   start_date: string;
 }
 
+export interface BulkError {
+  index: number;
+  detail: string;
+}
+
+export interface BulkResult {
+  created: number;
+  errors: BulkError[];
+}
+
 export interface ReceiptScanResponse {
   receipt_id: string;
   image_url: string;
