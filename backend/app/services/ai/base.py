@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel
 
-from app.models.enums import ExpenseNature
+from app.models.enums import ExpenseNature, TransactionType
 
 # Ejecuta una herramienta pedida por el LLM: (nombre, argumentos) -> resultado JSON.
 ToolExecutor = Callable[[str, dict], Awaitable[dict]]
@@ -22,6 +22,7 @@ class CategoryHint(BaseModel):
 
     id: uuid.UUID
     name: str
+    type: str | None = None  # "income" | "expense" (para estados de cuenta)
 
 
 class ReceiptExtraction(BaseModel):
@@ -36,6 +37,18 @@ class ReceiptExtraction(BaseModel):
     confidence: float | None = None
     reasoning: str | None = None
     raw_items: list[str] = []
+
+
+class StatementItem(BaseModel):
+    """Un movimiento reconocido dentro de un estado de cuenta. Sugerencia; el
+    usuario revisa antes de guardar."""
+
+    type: TransactionType = TransactionType.expense
+    amount: Decimal | None = None
+    transaction_date: date | None = None
+    description: str | None = None
+    suggested_category_id: uuid.UUID | None = None
+    suggested_expense_nature: ExpenseNature | None = None
 
 
 class ChatMessage(BaseModel):
@@ -62,6 +75,16 @@ class AIProvider(ABC):
         """Analiza la imagen del recibo y devuelve un borrador de transacción.
         NO desglosa la lista en varias transacciones: decide la naturaleza
         general del gasto (fijo/variable/discrecional)."""
+
+    @abstractmethod
+    async def extract_statement(
+        self,
+        pdf_bytes: bytes,
+        mime_type: str,
+        categories: list[CategoryHint],
+    ) -> list[StatementItem]:
+        """Lee un estado de cuenta (PDF) y devuelve TODOS los movimientos
+        reconocidos como borradores para que el usuario los revise."""
 
     @abstractmethod
     async def chat(

@@ -27,7 +27,7 @@ from app.schemas.transaction import (
     TransactionUpdate,
 )
 from app.services.ai import get_ai_provider
-from app.services.ai.base import CategoryHint
+from app.services.ai.base import CategoryHint, StatementItem
 from app.services.storage import get_storage
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
@@ -288,6 +288,44 @@ async def scan_receipt(
         image_url=image_url,
         **extraction.model_dump(),
     )
+
+
+@router.post("/import-statement", response_model=list[StatementItem])
+async def import_statement(
+    current_user: CurrentUser,
+    db: DbSession,
+    file: UploadFile = File(...),
+) -> list[StatementItem]:
+    """Sube un estado de cuenta en PDF; la IA reconoce cada movimiento y los
+    devuelve como borradores. NO crea nada: el usuario revisa y confirma con
+    POST /transactions/bulk."""
+    if (file.content_type or "") != "application/pdf":
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="El archivo debe ser un PDF",
+        )
+    data = await file.read()
+    if len(data) > settings.max_upload_mb * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"El PDF supera {settings.max_upload_mb} MB",
+        )
+
+    cats = list(
+        (
+            await db.scalars(
+                select(Category).where(
+                    or_(
+                        Category.user_id.is_(None),
+                        Category.user_id == current_user.id,
+                    ),
+                    Category.is_archived.is_(False),
+                )
+            )
+        ).all()
+    )
+    hints = [CategoryHint(id=c.id, name=c.name, type=c.type.value) for c in cats]
+    return await get_ai_provider().extract_statement(data, file.content_type, hints)
 
 
 async def _get_owned_transaction(

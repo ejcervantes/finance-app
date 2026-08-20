@@ -4,12 +4,13 @@ probar todo el flujo de escaneo sin llamar a un servicio externo."""
 from datetime import date
 from decimal import Decimal
 
-from app.models.enums import ExpenseNature
+from app.models.enums import ExpenseNature, TransactionType
 from app.services.ai.base import (
     AIProvider,
     CategoryHint,
     ChatMessage,
     ReceiptExtraction,
+    StatementItem,
     ToolExecutor,
     ToolSpec,
 )
@@ -37,6 +38,32 @@ class StubProvider(AIProvider):
             reasoning="Extracción simulada: configura GEMINI_API_KEY para usar IA real.",
             raw_items=["(demo) Leche", "(demo) Arroz", "(demo) Pollo"],
         )
+
+    async def extract_statement(
+        self,
+        pdf_bytes: bytes,
+        mime_type: str,
+        categories: list[CategoryHint],
+    ) -> list[StatementItem]:
+        expense = next((c for c in categories if c.type == "expense"), None)
+        income = next((c for c in categories if c.type == "income"), None)
+        return [
+            StatementItem(
+                type=TransactionType.expense,
+                amount=Decimal("12500.00"),
+                transaction_date=date.today(),
+                description="Movimiento demo 1 (sin IA real)",
+                suggested_category_id=expense.id if expense else None,
+                suggested_expense_nature=ExpenseNature.fixed,
+            ),
+            StatementItem(
+                type=TransactionType.income,
+                amount=Decimal("500000.00"),
+                transaction_date=date.today(),
+                description="Depósito demo (sin IA real)",
+                suggested_category_id=income.id if income else None,
+            ),
+        ]
 
     async def chat(
         self,

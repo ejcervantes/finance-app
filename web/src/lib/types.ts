@@ -100,6 +100,15 @@ export interface BulkResult {
   errors: BulkError[];
 }
 
+export interface StatementImportItem {
+  type: TransactionType;
+  amount: string | null;
+  transaction_date: string | null;
+  description: string | null;
+  suggested_category_id: string | null;
+  suggested_expense_nature: ExpenseNature | null;
+}
+
 export interface ReceiptScanResponse {
   receipt_id: string;
   image_url: string;

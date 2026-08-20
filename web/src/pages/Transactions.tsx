@@ -1,11 +1,11 @@
 import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { useMonth } from "../context/MonthContext";
 import { formatMoney, formatDate, todayISO } from "../lib/format";
 import { Button, Card, Field, Input, Spinner } from "../components/ui";
 import { Modal } from "../components/Modal";
+import { ImportStatementModal } from "../components/ImportStatementModal";
 import { MonthNav } from "../components/MonthNav";
 import { ArrowDownIcon, ArrowUpIcon, CameraIcon, PlusIcon, UploadIcon } from "../components/icons";
 import {
@@ -29,10 +29,10 @@ interface ModalState {
 
 export function Transactions() {
   const { range, label } = useMonth();
-  const navigate = useNavigate();
   const [modal, setModal] = useState<ModalState>({ open: false, editing: null, draft: null });
   const [scanning, setScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [showImport, setShowImport] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const txQ = useQuery({
@@ -49,7 +49,7 @@ export function Transactions() {
     setScanError(null);
     setScanning(true);
     try {
-      const draft = await api.uploadImage<ReceiptScanResponse>("/transactions/scan", file);
+      const draft = await api.uploadFile<ReceiptScanResponse>("/transactions/scan", file);
       setModal({ open: true, editing: null, draft });
     } catch (err) {
       setScanError(err instanceof Error ? err.message : "No se pudo escanear el recibo.");
@@ -65,7 +65,7 @@ export function Transactions() {
         <div className="flex flex-wrap items-center gap-2">
           <MonthNav />
           <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-          <Button variant="secondary" onClick={() => navigate("/importar")}>
+          <Button variant="secondary" onClick={() => setShowImport(true)}>
             <UploadIcon width={18} height={18} />
             Importar
           </Button>
@@ -127,6 +127,10 @@ export function Transactions() {
           defaultDate={range.to > todayISO() ? todayISO() : range.to}
           onClose={() => setModal({ open: false, editing: null, draft: null })}
         />
+      )}
+
+      {showImport && (
+        <ImportStatementModal categories={catQ.data ?? []} onClose={() => setShowImport(false)} />
       )}
     </div>
   );

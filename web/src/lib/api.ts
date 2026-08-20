@@ -81,8 +81,8 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   return (await res.json()) as T;
 }
 
-/** Sube una imagen (multipart) al endpoint de escaneo de recibos. */
-async function uploadImage<T>(path: string, file: File): Promise<T> {
+/** Sube un archivo (imagen o PDF) como multipart/form-data (campo "file"). */
+async function uploadFile<T>(path: string, file: File): Promise<T> {
   const form = new FormData();
   form.append("file", file);
   const headers: Record<string, string> = {};
@@ -114,7 +114,7 @@ export const api = {
   patch: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: "PATCH", body }),
   del: <T>(path: string) => request<T>(path, { method: "DELETE" }),
-  uploadImage,
+  uploadFile,
 };
 
 export { API_URL };

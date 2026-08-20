@@ -10,13 +10,14 @@ from datetime import date
 from decimal import Decimal, InvalidOperation
 
 from app.core.config import settings
-from app.models.enums import ExpenseNature
+from app.models.enums import ExpenseNature, TransactionType
 from app.services.ai.base import (
     AIProvider,
     AIProviderError,
     CategoryHint,
     ChatMessage,
     ReceiptExtraction,
+    StatementItem,
     ToolExecutor,
     ToolSpec,
 )
@@ -53,6 +54,41 @@ def _build_prompt(categories: list[CategoryHint]) -> str:
         '  "reasoning": string,            // breve, en español\n'
         '  "items": [string]               // productos detectados (solo referencia)\n'
         "}"
+    )
+
+
+_STATEMENT_SYSTEM = (
+    "Eres un asistente que lee estados de cuenta bancarios en PDF para una app de "
+    "finanzas personales. Extraes TODOS los movimientos, uno por transacción, "
+    "respetando el orden del documento. Para cada movimiento:\n"
+    "- 'type': 'income' si es un crédito/depósito/abono; 'expense' si es un "
+    "débito/cargo/compra/retiro/pago.\n"
+    "- 'amount': monto SIEMPRE positivo (sin signo).\n"
+    "- eliges la categoría que mejor encaje de la lista (respetando el tipo), o null.\n"
+    "- para gastos, decides la naturaleza (fixed/variable/discretionary); para "
+    "ingresos va null.\n"
+    "No inventes movimientos. Si el PDF no es un estado de cuenta o no hay "
+    "movimientos, devuelves una lista vacía. Respondes SOLO con JSON válido."
+)
+
+
+def _build_statement_prompt(categories: list[CategoryHint]) -> str:
+    cat_lines = (
+        "\n".join(f"- {c.id}: {c.name} ({c.type or 'expense'})" for c in categories)
+        or "(ninguna)"
+    )
+    return (
+        "Categorías disponibles (usa el id exacto; respeta el tipo):\n"
+        f"{cat_lines}\n\n"
+        "Devuelve un JSON con esta forma exacta:\n"
+        '{ "items": [ {\n'
+        '  "type": "income"|"expense",\n'
+        '  "amount": number,                      // positivo\n'
+        '  "transaction_date": "YYYY-MM-DD",\n'
+        '  "description": string,\n'
+        '  "suggested_category_id": string|null,\n'
+        '  "suggested_expense_nature": "fixed"|"variable"|"discretionary"|null\n'
+        "} ] }"
     )
 
 
@@ -103,6 +139,36 @@ class GeminiProvider(AIProvider):
         except (json.JSONDecodeError, TypeError) as e:
             raise AIProviderError(f"Respuesta de Gemini no es JSON válido: {e}") from e
         return _parse(data, categories)
+
+    async def extract_statement(
+        self,
+        pdf_bytes: bytes,
+        mime_type: str,
+        categories: list[CategoryHint],
+    ) -> list[StatementItem]:
+        from google.genai import types
+
+        response = await self._generate(
+            model=self._model,
+            contents=[
+                types.Part.from_bytes(data=pdf_bytes, mime_type=mime_type),
+                _build_statement_prompt(categories),
+            ],
+            config=types.GenerateContentConfig(
+                system_instruction=_STATEMENT_SYSTEM,
+                response_mime_type="application/json",
+                temperature=0.0,
+            ),
+        )
+        try:
+            data = json.loads(response.text)
+        except (json.JSONDecodeError, TypeError) as e:
+            raise AIProviderError(f"Respuesta de Gemini no es JSON válido: {e}") from e
+        raw_items = data.get("items") if isinstance(data, dict) else data
+        if not isinstance(raw_items, list):
+            raw_items = []
+        valid_ids = {str(c.id) for c in categories}
+        return [_parse_statement_item(it, valid_ids) for it in raw_items if isinstance(it, dict)]
 
     async def chat(
         self,
@@ -173,6 +239,45 @@ class GeminiProvider(AIProvider):
             ),
         )
         return response.text or ""
+
+
+def _parse_statement_item(data: dict, valid_ids: set[str]) -> StatementItem:
+    """Convierte un movimiento del JSON de Gemini en StatementItem (defensivo)."""
+    tx_type = TransactionType.income if data.get("type") == "income" else TransactionType.expense
+
+    amount = None
+    try:
+        if data.get("amount") is not None:
+            amount = abs(Decimal(str(data["amount"])).quantize(Decimal("0.01")))
+    except (InvalidOperation, ValueError):
+        amount = None
+
+    tx_date = None
+    try:
+        if data.get("transaction_date"):
+            tx_date = date.fromisoformat(str(data["transaction_date"]))
+    except (ValueError, TypeError):
+        tx_date = None
+
+    cat_id = None
+    raw_cat = data.get("suggested_category_id")
+    if raw_cat and str(raw_cat) in valid_ids:
+        cat_id = uuid.UUID(str(raw_cat))
+
+    nature = None
+    if tx_type == TransactionType.expense:
+        raw_nature = data.get("suggested_expense_nature")
+        if raw_nature in {n.value for n in ExpenseNature}:
+            nature = ExpenseNature(raw_nature)
+
+    return StatementItem(
+        type=tx_type,
+        amount=amount,
+        transaction_date=tx_date,
+        description=(data.get("description") or None),
+        suggested_category_id=cat_id,
+        suggested_expense_nature=nature,
+    )
 
 
 def _parse(data: dict, categories: list[CategoryHint]) -> ReceiptExtraction:
